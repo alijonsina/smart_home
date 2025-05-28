@@ -1,0 +1,38 @@
+[
+    {
+        "device_id": "living_room_light",
+        "name": "Living Room Light",
+        "location": "Living Room",
+        "status": "OFF",
+        "brightness": 100,
+        "last_updated": "2025-05-28 21:55:09",
+        "type": "light"
+    },
+    {
+        "device_id": "bedroom_light",
+        "name": "Bedroom Light",
+        "location": "Bedroom",
+        "status": "OFF",
+        "brightness": 100,
+        "last_updated": "2025-05-28 21:55:09",
+        "type": "light"
+    },
+    {
+        "device_id": "main_thermostat",
+        "name": "Main Thermostat",
+        "location": "Living Room",
+        "status": "OFF",
+        "temperature": 22.0,
+        "mode": "HEAT",
+        "last_updated": "2025-05-28 21:55:09",
+        "type": "thermostat"
+    },
+    {
+        "device_id": "front_door",
+        "name": "Front Door Lock",
+        "location": "Entrance",
+        "status": "LOCKED",
+        "last_updated": "2025-05-28 21:55:09",
+        "type": "smartlock"
+    }
+]

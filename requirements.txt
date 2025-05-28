@@ -1,0 +1,2 @@
+# No external dependencies required as we're using Python's built-in tkinter
+# Python version 3.7 or higher is recommended for type hints support 
