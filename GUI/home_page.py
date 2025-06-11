@@ -16,32 +16,44 @@ from Devices.device import Device, Light, Thermostat, SmartLock
 class DeviceControlFrame(ttk.Frame):
     """Frame for controlling individual devices"""
     def __init__(self, parent, device: Device, **kwargs):
-        super().__init__(parent, style="Custom.TFrame", padding="10", **kwargs)
+        super().__init__(parent, style="DeviceCard.TFrame", padding="15", **kwargs)
         self.device = device
         self.create_widgets()
 
     def create_widgets(self):
-        # Device name and location
-        ttk.Label(self, text=f"{self.device.name}", style="DeviceName.TLabel").pack(anchor="w")
-        ttk.Label(self, text=f"Location: {self.device.location}", style="Custom.TLabel").pack(anchor="w")
+        # Device header with name and location
+        header_frame = ttk.Frame(self, style="DeviceCard.TFrame")
+        header_frame.pack(fill="x", pady=(0, 10))
         
-        # Status
-        status_frame = ttk.Frame(self, style="Custom.TFrame")
-        status_frame.pack(fill="x", pady=5)
-        self.status_label = ttk.Label(status_frame, text=f"Status: {self.device.status}", 
-                                    style="Status.TLabel")
+        ttk.Label(header_frame, text=f"{self.device.name}", 
+                 style="DeviceName.TLabel").pack(side="left")
+        ttk.Label(header_frame, text=f"📍 {self.device.location}", 
+                 style="Location.TLabel").pack(side="right")
+        
+        # Status with modern styling
+        status_frame = ttk.Frame(self, style="DeviceCard.TFrame")
+        status_frame.pack(fill="x", pady=(0, 15))
+        
+        status_text = "ON" if self.device.status else "OFF"
+        if isinstance(self.device, SmartLock):
+            status_text = "LOCKED" if self.device.locked else "UNLOCKED"
+        
+        status_style = "StatusOn.TLabel" if (self.device.status or 
+                                           (isinstance(self.device, SmartLock) and self.device.locked)) else "StatusOff.TLabel"
+        self.status_label = ttk.Label(status_frame, text=f"Status: {status_text}", 
+                                    style=status_style)
         self.status_label.pack(side="left")
         
-        # Control buttons
-        btn_frame = ttk.Frame(self, style="Custom.TFrame")
-        btn_frame.pack(fill="x", pady=5)
+        # Control buttons with modern styling
+        btn_frame = ttk.Frame(self, style="DeviceCard.TFrame")
+        btn_frame.pack(fill="x", pady=(0, 10))
         
-        self.on_btn = ttk.Button(btn_frame, text="ON", command=self.turn_on,
+        self.on_btn = ttk.Button(btn_frame, text="🔆 ON", command=self.turn_on,
                                style="On.TButton")
-        self.off_btn = ttk.Button(btn_frame, text="OFF", command=self.turn_off,
+        self.off_btn = ttk.Button(btn_frame, text="⭕ OFF", command=self.turn_off,
                                 style="Off.TButton")
-        self.on_btn.pack(side="left", padx=5)
-        self.off_btn.pack(side="left", padx=5)
+        self.on_btn.pack(side="left", padx=(0, 10))
+        self.off_btn.pack(side="left")
 
         # Device-specific controls
         if isinstance(self.device, Light):
@@ -55,39 +67,40 @@ class DeviceControlFrame(ttk.Frame):
 
     def create_light_controls(self):
         """Create controls specific to Light devices"""
-        control_frame = ttk.Frame(self, style="Custom.TFrame")
-        control_frame.pack(fill="x", pady=5)
+        control_frame = ttk.Frame(self, style="DeviceCard.TFrame")
+        control_frame.pack(fill="x", pady=(10, 0))
         
-        ttk.Label(control_frame, text="Brightness:", style="Custom.TLabel").pack(side="left")
+        ttk.Label(control_frame, text="💡 Brightness:", style="ControlLabel.TLabel").pack(side="left")
         self.brightness_scale = ttk.Scale(control_frame, from_=0, to=100, 
-                                        orient="horizontal", length=150,
+                                        orient="horizontal", length=200,
                                         command=self.update_brightness)
         self.brightness_scale.set(self.device.brightness)
-        self.brightness_scale.pack(side="left", padx=5)
+        self.brightness_scale.pack(side="left", padx=10)
 
     def create_thermostat_controls(self):
         """Create controls specific to Thermostat devices"""
-        control_frame = ttk.Frame(self, style="Custom.TFrame")
-        control_frame.pack(fill="x", pady=5)
+        control_frame = ttk.Frame(self, style="DeviceCard.TFrame")
+        control_frame.pack(fill="x", pady=(10, 0))
         
         # Temperature control
-        temp_frame = ttk.Frame(control_frame, style="Custom.TFrame")
-        temp_frame.pack(fill="x", pady=2)
-        ttk.Label(temp_frame, text="Temperature:", style="Custom.TLabel").pack(side="left")
+        temp_frame = ttk.Frame(control_frame, style="DeviceCard.TFrame")
+        temp_frame.pack(fill="x", pady=(0, 10))
+        ttk.Label(temp_frame, text="🌡️ Temperature:", style="ControlLabel.TLabel").pack(side="left")
         self.temp_scale = ttk.Scale(temp_frame, from_=10, to=30, orient="horizontal",
-                                  length=150, command=self.update_temperature)
+                                  length=200, command=self.update_temperature)
         self.temp_scale.set(self.device.temperature)
-        self.temp_scale.pack(side="left", padx=5)
+        self.temp_scale.pack(side="left", padx=10)
         
         # Mode control
-        mode_frame = ttk.Frame(control_frame, style="Custom.TFrame")
-        mode_frame.pack(fill="x", pady=2)
-        ttk.Label(mode_frame, text="Mode:", style="Custom.TLabel").pack(side="left")
+        mode_frame = ttk.Frame(control_frame, style="DeviceCard.TFrame")
+        mode_frame.pack(fill="x")
+        ttk.Label(mode_frame, text="Mode:", style="ControlLabel.TLabel").pack(side="left")
         self.mode_var = tk.StringVar(value=self.device.mode)
         for mode in ["HEAT", "COOL", "OFF"]:
             ttk.Radiobutton(mode_frame, text=mode, value=mode, 
                            variable=self.mode_var,
-                           command=self.update_mode).pack(side="left", padx=5)
+                           command=self.update_mode,
+                           style="Mode.TRadiobutton").pack(side="left", padx=(10, 5))
 
     def create_lock_controls(self):
         """Create controls specific to SmartLock devices"""
@@ -127,15 +140,27 @@ class DeviceControlFrame(ttk.Frame):
         status_text = "ON" if self.device.status else "OFF"
         if isinstance(self.device, SmartLock):
             status_text = "LOCKED" if self.device.locked else "UNLOCKED"
-        self.status_label.config(text=f"Status: {status_text}")
+        
+        status_style = "StatusOn.TLabel" if (self.device.status or 
+                                           (isinstance(self.device, SmartLock) and self.device.locked)) else "StatusOff.TLabel"
+        self.status_label.config(text=f"Status: {status_text}", style=status_style)
 
 
 class HomePage:
     def __init__(self, username: str):
+        self.bg_color = "#ffffff"
+        self.card_bg = "#f7f7f7"
+        self.text_color = "#222222"
+        self.accent_color = "#1976d2"
+        self.danger_color = "#f44336"
+        
         self.root = tk.Tk()
         self.root.title(f"Smart Home Control - {username}")
-        self.root.geometry("800x600")
-        self.root.configure(bg="#f0f0f0")
+        self.root.geometry("900x700")
+        self.root.configure(bg=self.bg_color)
+        
+        # Store username for logout functionality
+        self.username = username
         
         self.device_manager = DeviceManager()
         self.setup_styles()
@@ -146,15 +171,30 @@ class HomePage:
             self.add_sample_devices()
 
     def setup_styles(self):
-        """Configure custom styles for widgets"""
+        """Configure modern styles for widgets"""
         style = ttk.Style()
-        style.configure("Custom.TFrame", background="#f0f0f0")
-        style.configure("Custom.TLabel", background="#f0f0f0", font=("Helvetica", 10))
-        style.configure("DeviceName.TLabel", background="#f0f0f0", font=("Helvetica", 12, "bold"))
-        style.configure("Status.TLabel", background="#f0f0f0", font=("Helvetica", 10, "italic"))
-        style.configure("On.TButton", background="#4CAF50")
-        style.configure("Off.TButton", background="#f44336")
-        style.configure("Title.TLabel", background="#f0f0f0", font=("Helvetica", 16, "bold"))
+        
+        # Frame styles
+        style.configure("Custom.TFrame", background=self.bg_color)
+        style.configure("DeviceCard.TFrame", background=self.card_bg, relief="raised", borderwidth=1)
+        
+        # Label styles
+        style.configure("Custom.TLabel", background=self.bg_color, foreground=self.text_color, font=("Segoe UI", 10))
+        style.configure("Title.TLabel", background=self.bg_color, foreground=self.text_color, font=("Segoe UI", 20, "bold"))
+        style.configure("DeviceName.TLabel", background=self.card_bg, foreground=self.text_color, font=("Segoe UI", 14, "bold"))
+        style.configure("Location.TLabel", background=self.card_bg, foreground="#888888", font=("Segoe UI", 10))
+        style.configure("StatusOn.TLabel", background=self.card_bg, foreground=self.accent_color, font=("Segoe UI", 10, "bold"))
+        style.configure("StatusOff.TLabel", background=self.card_bg, foreground="#888888", font=("Segoe UI", 10))
+        style.configure("ControlLabel.TLabel", background=self.card_bg, foreground=self.text_color, font=("Segoe UI", 10))
+        
+        # Button styles
+        style.configure("On.TButton", background=self.accent_color, foreground="white", font=("Segoe UI", 10, "bold"))
+        style.configure("Off.TButton", background=self.danger_color, foreground="white", font=("Segoe UI", 10, "bold"))
+        style.configure("Logout.TButton", background="#666666", foreground="white", font=("Segoe UI", 10))
+        style.configure("AddDevice.TButton", background=self.accent_color, foreground="white", font=("Segoe UI", 10, "bold"))
+        
+        # Radio button style
+        style.configure("Mode.TRadiobutton", background=self.card_bg, foreground=self.text_color, font=("Segoe UI", 9))
 
     def create_widgets(self):
         """Create the main container and widgets"""
@@ -162,22 +202,36 @@ class HomePage:
         self.main_frame = ttk.Frame(self.root, style="Custom.TFrame", padding="20")
         self.main_frame.pack(fill=tk.BOTH, expand=True)
 
-        # Title
-        title_frame = ttk.Frame(self.main_frame, style="Custom.TFrame")
-        title_frame.pack(fill="x", pady=(0, 20))
-        ttk.Label(title_frame, text="Smart Home Dashboard", 
-                 style="Title.TLabel").pack(side="left")
-
-        # Add device button
-        ttk.Button(title_frame, text="Add Device", 
-                  command=self.show_add_device_dialog).pack(side="right")
+        # Header with title, user info, and logout
+        header_frame = ttk.Frame(self.main_frame, style="Custom.TFrame")
+        header_frame.pack(fill="x", pady=(0, 30))
+        
+        # Left side - title
+        title_frame = ttk.Frame(header_frame, style="Custom.TFrame")
+        title_frame.pack(side="left")
+        ttk.Label(title_frame, text="🏠 Smart Home Dashboard", 
+                 style="Title.TLabel").pack(anchor="w")
+        ttk.Label(title_frame, text=f"Welcome back, {self.username}!", 
+                 style="Custom.TLabel").pack(anchor="w")
+        
+        # Right side - buttons
+        button_frame = ttk.Frame(header_frame, style="Custom.TFrame")
+        button_frame.pack(side="right")
+        
+        ttk.Button(button_frame, text="➕ Add Device", 
+                  command=self.show_add_device_dialog,
+                  style="AddDevice.TButton").pack(side="left", padx=(0, 10))
+        
+        ttk.Button(button_frame, text="🚪 Logout", 
+                  command=self.logout,
+                  style="Logout.TButton").pack(side="left")
 
         # Devices container
         self.devices_frame = ttk.Frame(self.main_frame, style="Custom.TFrame")
         self.devices_frame.pack(fill=tk.BOTH, expand=True)
         
         # Create scrollable canvas for devices
-        self.canvas = tk.Canvas(self.devices_frame, bg="#f0f0f0", 
+        self.canvas = tk.Canvas(self.devices_frame, bg=self.bg_color, 
                               highlightthickness=0)
         self.scrollbar = ttk.Scrollbar(self.devices_frame, orient="vertical", 
                                      command=self.canvas.yview)
@@ -196,6 +250,15 @@ class HomePage:
 
         self.refresh_devices()
 
+    def logout(self):
+        """Handle logout functionality"""
+        if messagebox.askyesno("Logout", "Are you sure you want to logout?"):
+            self.root.destroy()
+            # Reopen the auth GUI
+            from GUI.auth_gui import AuthGUI
+            auth_app = AuthGUI()
+            auth_app.run()
+
     def refresh_devices(self):
         """Refresh the devices display"""
         # Clear existing devices
@@ -205,33 +268,61 @@ class HomePage:
         # Add device controls
         for device in self.device_manager.get_all_devices():
             device_frame = DeviceControlFrame(self.scrollable_frame, device)
-            device_frame.pack(fill="x", pady=5, padx=5)
+            device_frame.pack(fill="x", pady=10, padx=5)
             ttk.Separator(self.scrollable_frame, orient="horizontal").pack(fill="x", pady=5)
 
     def show_add_device_dialog(self):
         """Show dialog to add a new device"""
         dialog = tk.Toplevel(self.root)
         dialog.title("Add New Device")
-        dialog.geometry("300x400")
-        dialog.configure(bg="#f0f0f0")
+        dialog.geometry("400x500")
+        dialog.configure(bg=self.bg_color)
         dialog.transient(self.root)
         dialog.grab_set()
 
+        # Center the dialog
+        dialog.update_idletasks()
+        x = (dialog.winfo_screenwidth() // 2) - (400 // 2)
+        y = (dialog.winfo_screenheight() // 2) - (500 // 2)
+        dialog.geometry(f"400x500+{x}+{y}")
+
+        # Main frame
+        main_frame = ttk.Frame(dialog, style="Custom.TFrame", padding="20")
+        main_frame.pack(fill=tk.BOTH, expand=True)
+
+        # Title
+        ttk.Label(main_frame, text="➕ Add New Device", 
+                 style="Title.TLabel").pack(pady=(0, 20))
+
         # Device type selection
-        ttk.Label(dialog, text="Device Type:", style="Custom.TLabel").pack(pady=5)
+        ttk.Label(main_frame, text="Device Type:", style="Custom.TLabel").pack(pady=(0, 10))
         device_type = tk.StringVar(value="light")
-        for dtype in ["light", "thermostat", "lock"]:
-            ttk.Radiobutton(dialog, text=dtype.capitalize(), value=dtype,
-                           variable=device_type).pack()
+        
+        type_frame = ttk.Frame(main_frame, style="Custom.TFrame")
+        type_frame.pack(fill="x", pady=(0, 20))
+        
+        device_types = [
+            ("💡 Light", "light"),
+            ("🌡️ Thermostat", "thermostat"), 
+            ("🔒 Smart Lock", "lock")
+        ]
+        
+        for display_name, dtype in device_types:
+            ttk.Radiobutton(type_frame, text=display_name, value=dtype,
+                           variable=device_type, style="Mode.TRadiobutton").pack(anchor="w", pady=2)
 
         # Device details
-        ttk.Label(dialog, text="Device Name:", style="Custom.TLabel").pack(pady=5)
-        name_entry = ttk.Entry(dialog, width=30)
-        name_entry.pack()
+        ttk.Label(main_frame, text="Device Name:", style="Custom.TLabel").pack(pady=(0, 5))
+        name_entry = ttk.Entry(main_frame, width=40)
+        name_entry.pack(pady=(0, 15))
 
-        ttk.Label(dialog, text="Location:", style="Custom.TLabel").pack(pady=5)
-        location_entry = ttk.Entry(dialog, width=30)
-        location_entry.pack()
+        ttk.Label(main_frame, text="Location:", style="Custom.TLabel").pack(pady=(0, 5))
+        location_entry = ttk.Entry(main_frame, width=40)
+        location_entry.pack(pady=(0, 30))
+
+        # Button frame
+        btn_frame = ttk.Frame(main_frame, style="Custom.TFrame")
+        btn_frame.pack(fill="x")
 
         def add_device():
             name = name_entry.get().strip()
@@ -248,10 +339,17 @@ class HomePage:
             if self.device_manager.add_device(dtype, device_id, name, location):
                 self.refresh_devices()
                 dialog.destroy()
+                messagebox.showinfo("Success", f"{name} has been added successfully!")
             else:
                 messagebox.showerror("Error", "Failed to add device")
 
-        ttk.Button(dialog, text="Add Device", command=add_device).pack(pady=20)
+        def cancel():
+            dialog.destroy()
+
+        ttk.Button(btn_frame, text="Add Device", command=add_device,
+                  style="AddDevice.TButton").pack(side="left", padx=(0, 10))
+        ttk.Button(btn_frame, text="Cancel", command=cancel,
+                  style="Logout.TButton").pack(side="left")
 
     def add_sample_devices(self):
         """Add some sample devices for demonstration"""

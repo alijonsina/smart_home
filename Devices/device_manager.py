@@ -21,7 +21,8 @@ class DeviceManager:
         self._device_types: Dict[str, Type[Device]] = {
             "light": Light,
             "thermostat": Thermostat,
-            "lock": SmartLock
+            "lock": SmartLock,
+            "smartlock": SmartLock  # Backward compatibility
         }
         self._devices_file = os.path.join(os.path.dirname(__file__), 'devices.json')
         self._load_devices()
@@ -35,9 +36,28 @@ class DeviceManager:
                     devices_data = json.load(f)
                     for device_data in devices_data:
                         device_type = device_data.pop('type')
+                        # Store status and last_updated for later use
+                        status = device_data.pop('status', 'OFF')
+                        last_updated = device_data.pop('last_updated', None)
+                        
                         if device_type in self._device_types:
                             device_class = self._device_types[device_type]
                             device = device_class(**device_data)
+                            
+                            # Set the correct status based on the loaded data
+                            if device_type == "lock":
+                                # For locks, status "LOCKED" means ON, "UNLOCKED" means OFF
+                                if status == "LOCKED":
+                                    device.turn_on()
+                                else:
+                                    device.turn_off()
+                            else:
+                                # For other devices, status "ON" means ON, "OFF" means OFF
+                                if status == "ON":
+                                    device.turn_on()
+                                else:
+                                    device.turn_off()
+                            
                             self._devices[device.device_id] = device
             except Exception as e:
                 print(f"Error loading devices: {e}")
